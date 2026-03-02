@@ -45,6 +45,11 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json()
   const { id, status } = body
   
+  const existing = await prisma.appointment.findUnique({ where: { id } })
+  if (!existing || existing.userId !== session.user.id) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   const appointment = await prisma.appointment.update({
     where: { id },
     data: { status },

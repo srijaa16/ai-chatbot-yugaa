@@ -43,6 +43,11 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
   
+  const existing = await prisma.reminder.findUnique({ where: { id: id! } })
+  if (!existing || existing.userId !== session.user.id) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   await prisma.reminder.delete({ where: { id: id! } })
   
   return NextResponse.json({ success: true })
@@ -55,6 +60,11 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json()
   const { id, active } = body
   
+  const existing = await prisma.reminder.findUnique({ where: { id } })
+  if (!existing || existing.userId !== session.user.id) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   const reminder = await prisma.reminder.update({
     where: { id },
     data: { active },
