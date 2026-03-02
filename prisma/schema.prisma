@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  password    String
+  category    String   @default("general_wellness")
+  pregnancyWeek Int?
+  dueDate     DateTime?
+  childBirthDate DateTime?
+  doctorId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assessments Assessment[]
+  appointments Appointment[]
+  messages    Message[]
+  reminders   Reminder[]
+  doctor      Doctor?  @relation(fields: [doctorId], references: [id])
+}
+
+model Doctor {
+  id          String   @id @default(cuid())
+  name        String
+  specialty   String
+  email       String   @unique
+  available   Boolean  @default(true)
+  users       User[]
+  appointments Appointment[]
+  chatMessages DoctorMessage[]
+}
+
+model Assessment {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  answers     String
+  score       Int
+  severity    String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Appointment {
+  id          String   @id @default(cuid())
+  userId      String
+  doctorId    String
+  date        DateTime
+  time        String
+  type        String
+  status      String   @default("scheduled")
+  notes       String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  userId      String
+  content     String
+  role        String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model DoctorMessage {
+  id          String   @id @default(cuid())
+  userId      String
+  doctorId    String
+  content     String
+  sender      String
+  createdAt   DateTime @default(now())
+  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+}
+
+model Reminder {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  time        String
+  days        String
+  active      Boolean  @default(true)
+  type        String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
